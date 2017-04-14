@@ -3,14 +3,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
-
-#define IMG_SIZE 25
+#include <string.h>
 
 typedef struct {
 	float value;
 	float *weight;
-} Node;
-
-Node** learn(char** fileList, Node** layer, float theta);
-void test(char** fileList, Node** layer, float theta);
-int isInArray(int val, int* array, int size);
+} Neuron;
