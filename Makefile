@@ -1,10 +1,10 @@
 all: ac 26 display_letters
 
 ac: perceptron_ac.c perceptron_ac.h perceptron.h
-	gcc -Wall -pedantic perceptron_ac.c -o perceptron_ac
+	gcc -Wall -pedantic perceptron_ac.c -o perceptron_ac -lm
 
 26: perceptron_26.c perceptron_26.h perceptron.h
-	gcc -Wall -pedantic perceptron_26.c -o perceptron_26
+	gcc -Wall -pedantic perceptron_26.c -o perceptron_26 -lm
 
 display_letters: display_letters.c
 	gcc -Wall -pedantic display_letters.c -o display_letters

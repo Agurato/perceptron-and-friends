@@ -104,7 +104,7 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 			if(counter-layer[1][0].value != 0) {
 				errors ++;
 			}
-			errorDiff += fabsf(counter-sum);
+			errorDiff += pow(counter-sum, 2);
 
 		}
 
@@ -113,7 +113,7 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 		printf("Iter %d:   diff = %f   ->   errors = %d\n", learnSteps, errorDiff, errors);
 
 		if(wh) {
-			if(errorDiff <= 0.00001) {
+			if(errorDiff <= 0.000001) {
 				learning = 0;
 			}
 		}
