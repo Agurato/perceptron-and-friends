@@ -4,6 +4,7 @@ int main(int argc, char const *argv[]) {
 
 	const float theta = 0.5;
 	int i = 0, j = 0;
+	int nbNeuronsHidden = 50;
 
 	srand(time(NULL));
 	srand48(time(NULL));
@@ -15,9 +16,10 @@ int main(int argc, char const *argv[]) {
 	}
 
 	Neuron** layer;
-	layer = malloc(2*sizeof(Neuron*));
+	layer = malloc(3*sizeof(Neuron*));
 	layer[0] = malloc(IMG_SIZE*sizeof(Neuron));
-	layer[1] = malloc(26*sizeof(Neuron));
+	layer[1] = malloc(nbNeuronsHidden*sizeof(Neuron));
+	layer[2] = malloc(26*sizeof(Neuron));
 
 	for(i=0; i<IMG_SIZE ; i++) {
 		layer[0][i].value = 0;
