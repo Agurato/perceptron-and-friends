@@ -12,16 +12,17 @@ display_letters: display_letters.c
 clean: clean_ac clean_26
 	rm -rf display_letters
 
-clean_out: clean_out_ac clean_out_26
+clean_out:
+	rm -rf results/*
 
 clean_ac: clean_out_ac
 	rm -rf perceptron_ac
 
 clean_out_ac:
-	rm -rf out_ac_*.txt
+	rm -rf results/out_ac_*.txt
 
 clean_26: clean_out_26
 	rm -rf perceptron_26
 
 clean_out_26:
-	rm -rf out_26_*.txt
+	rm -rf results/out_26_*.txt

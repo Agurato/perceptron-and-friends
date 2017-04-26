@@ -169,7 +169,7 @@ void test(char** fileList, Neuron** layer, float theta) {
 		FILE* inputFile = fopen(fileList[fileCount], "r");
 
 		char filename[30];
-		sprintf(filename, "results/out_26_test_%c.txt", fileList[fileCount][0]);
+		sprintf(filename, "results/out_26_test_%c.txt", fileList[fileCount][8]);
 		FILE* outputFile = fopen(filename, "w");
 
 		if(inputFile == NULL) {

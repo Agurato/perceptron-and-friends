@@ -147,10 +147,10 @@ void test(char** fileList, Neuron** layer, float theta, int wh) {
 
 		char filename[30];
 		if(wh) {
-			sprintf(filename, "results/out_ac_wh_test_%c.txt", fileList[fileCount][0]);
+			sprintf(filename, "results/out_ac_wh_test_%c.txt", fileList[fileCount][8]);
 		}
 		else {
-			sprintf(filename, "results/out_ac_s_test_%c.txt", fileList[fileCount][0]);
+			sprintf(filename, "results/out_ac_s_test_%c.txt", fileList[fileCount][8]);
 		}
 		FILE* outputFile = fopen(filename, "w");
 
