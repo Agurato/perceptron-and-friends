@@ -10,8 +10,8 @@ int main(int argc, char const *argv[]) {
 
 	char** fileList = malloc(26*sizeof(char*));
 	for(i=65 ; i<91 ; i++) {
-		fileList[i-65] = malloc(5*sizeof(char));
-		sprintf(fileList[i-65], "%c.txt", i);
+		fileList[i-65] = malloc(13*sizeof(char));
+		sprintf(fileList[i-65], "letters/%c.txt", i);
 	}
 
 	Neuron** layer;
@@ -41,7 +41,7 @@ Neuron** learn(char** fileList, Neuron** layer, float theta) {
 	int learning = 1, letter = 0, i = 0, j = 0, learnSteps = 0, c = 0;
 	int **init, **expected, *errors;
 
-	FILE* outputFile = fopen("out_26_learn.txt", "w");
+	FILE* outputFile = fopen("results/out_26_learn.txt", "w");
 	if(outputFile == NULL) {
 		puts("Error writing the file");
 		exit(1);
@@ -169,7 +169,7 @@ void test(char** fileList, Neuron** layer, float theta) {
 		FILE* inputFile = fopen(fileList[fileCount], "r");
 
 		char filename[30];
-		sprintf(filename, "out_26_test_%c.txt", fileList[fileCount][0]);
+		sprintf(filename, "results/out_26_test_%c.txt", fileList[fileCount][0]);
 		FILE* outputFile = fopen(filename, "w");
 
 		if(inputFile == NULL) {

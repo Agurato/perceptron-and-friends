@@ -19,8 +19,8 @@ int main(int argc, char const *argv[]) {
 	srand48(time(NULL));
 
 	char** fileList = malloc(2*sizeof(char*));
-	fileList[0] = "A.txt";
-	fileList[1] = "C.txt";
+	fileList[0] = "letters/A.txt";
+	fileList[1] = "letters/C.txt";
 
 	Neuron** layer;
 	layer = malloc(2*sizeof(Neuron*));
@@ -47,10 +47,10 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 	int** init;
 
 	if(wh) {
-		outputFile = fopen("out_ac_wh_learn.txt", "w");
+		outputFile = fopen("results/out_ac_wh_learn.txt", "w");
 	}
 	else {
-		outputFile = fopen("out_ac_s_learn.txt", "w");
+		outputFile = fopen("results/out_ac_s_learn.txt", "w");
 	}
 
 	if(outputFile == NULL) {
@@ -147,10 +147,10 @@ void test(char** fileList, Neuron** layer, float theta, int wh) {
 
 		char filename[30];
 		if(wh) {
-			sprintf(filename, "out_ac_wh_test_%c.txt", fileList[fileCount][0]);
+			sprintf(filename, "results/out_ac_wh_test_%c.txt", fileList[fileCount][0]);
 		}
 		else {
-			sprintf(filename, "out_ac_s_test_%c.txt", fileList[fileCount][0]);
+			sprintf(filename, "results/out_ac_s_test_%c.txt", fileList[fileCount][0]);
 		}
 		FILE* outputFile = fopen(filename, "w");
 
