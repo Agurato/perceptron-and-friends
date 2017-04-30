@@ -4,7 +4,20 @@ int main(int argc, char const *argv[]) {
 
 	const float theta = 0.5;
 	int i = 0, j = 0;
-	int nbNeuronsHidden = 50;
+	int nbHiddenNeurons = 0;
+
+	if(argc >= 2) {
+		if(strcmp(argv[1], "--help") == 0) {
+			puts("Use \"./perceptron_26 <nb of neurons in the hidden layer>\" to use a hidden layer with the specified number of neurons");
+			exit(0);
+		}
+		else {
+			int input = atoi(argv[1]);
+			if(input > 0) {
+				nbHiddenNeurons = input;
+			}
+		}
+	}
 
 	srand(time(NULL));
 	srand48(time(NULL));
@@ -16,27 +29,169 @@ int main(int argc, char const *argv[]) {
 	}
 
 	Neuron** layer;
-	layer = malloc(3*sizeof(Neuron*));
-	layer[0] = malloc(IMG_SIZE*sizeof(Neuron));
-	layer[1] = malloc(nbNeuronsHidden*sizeof(Neuron));
-	layer[2] = malloc(26*sizeof(Neuron));
+	if(nbHiddenNeurons == 0) {
+		printf("No hidden layer used\n\n");
+		layer = malloc(2*sizeof(Neuron*));
+		layer[0] = malloc(IMG_SIZE*sizeof(Neuron));
+		layer[1] = malloc(26*sizeof(Neuron));
 
-	for(i=0; i<IMG_SIZE ; i++) {
-		layer[0][i].value = 0;
-		layer[0][i].weight = malloc(26*sizeof(float));
-		for(j=0 ; j<26 ; j++) {
-			layer[0][i].weight[j] = drand48()/IMG_SIZE;
+		for(i=0; i<IMG_SIZE ; i++) {
+			layer[0][i].value = 0;
+			layer[0][i].weight = malloc(26*sizeof(float));
+			for(j=0 ; j<26 ; j++) {
+				layer[0][i].weight[j] = drand48()/IMG_SIZE;
+			}
 		}
+
+		layer = learnNoHidden(fileList, layer, theta);
+
+		test(fileList, layer, theta);
 	}
+	else {
+		printf("Hidden layer used with %d neurons\n\n", nbHiddenNeurons);
+		layer = malloc(3*sizeof(Neuron*));
+		layer[0] = malloc(IMG_SIZE*sizeof(Neuron));
+		layer[1] = malloc(nbHiddenNeurons*sizeof(Neuron));
+		layer[2] = malloc(26*sizeof(Neuron));
 
-	layer = learn(fileList, layer, theta);
+		for(i=0; i<IMG_SIZE ; i++) {
+			layer[0][i].value = 0;
+			layer[0][i].weight = malloc(nbHiddenNeurons*sizeof(float));
+			for(j=0 ; j<nbHiddenNeurons ; j++) {
+				layer[0][i].weight[j] = drand48()/IMG_SIZE;
+			}
+		}
+		for(i=0; i<nbHiddenNeurons ; i++) {
+			layer[1][i].value = 0;
+			layer[1][i].weight = malloc(26*sizeof(float));
+			for(j=0 ; j<26 ; j++) {
+				layer[1][i].weight[j] = drand48()/nbHiddenNeurons;
+			}
+		}
 
-	test(fileList, layer, theta);
+		layer = learnHidden(fileList, layer, theta, nbHiddenNeurons);
+
+		test(fileList, layer, theta);
+	}
 
 	return 0;
 }
 
-Neuron** learn(char** fileList, Neuron** layer, float theta) {
+Neuron** learnNoHidden(char** fileList, Neuron** layer, float theta) {
+	float epsilon = 0.05, minErrorDiff = -1;
+	float *errorDiff;
+	int minOverride = 0;
+	int learning = 1, letter = 0, i = 0, j = 0, learnSteps = 0, c = 0;
+	int **init, **expected, *errors;
+
+	FILE* outputFile = fopen("results/out_26_learn.txt", "w");
+	if(outputFile == NULL) {
+		puts("Error writing the file");
+		exit(1);
+	}
+
+	init = malloc(26*sizeof(int*));
+	expected = malloc(26*sizeof(int*));
+	for(letter=0 ; letter<26 ; letter++) {
+		int line = 0;
+		init[letter] = malloc(IMG_SIZE*sizeof(int));
+		expected[letter] = malloc(26*sizeof(int));
+		FILE* inputFile = fopen(fileList[letter], "r");
+		if(inputFile == NULL) {
+			puts("Error reading the file");
+			exit(1);
+		}
+		i = 0;
+		while((c = fgetc(inputFile)) != EOF) {
+			if(c != 48 && c != 49) {
+				line = 1;
+				i = 0;
+				continue;
+			}
+			c -= 48;
+			if(line == 0) {
+				init[letter][i] = c;
+			}
+			else {
+				expected[letter][i] = c;
+			}
+			i++;
+		}
+		fclose(inputFile);
+	}
+
+	errorDiff = malloc(26*sizeof(float));
+	errors = malloc(26*sizeof(int));
+	while(learning) {
+		for(j=0 ; j<26 ; j++) {
+			errorDiff[j] = 0;
+			errors[j] = 0;
+		}
+
+		// For each letter to learn
+		for(letter=0 ; letter<26 ; letter++) {
+			for(i=0 ; i<IMG_SIZE ; i++) {
+				layer[0][i].value = init[letter][i];
+			}
+			float *sum;
+			sum = malloc(26*sizeof(float));
+			for(j=0 ; j<26 ; j++) {
+				sum[j] = 0;
+				for(i=0 ; i<IMG_SIZE ; i++) {
+					sum[j] += layer[0][i].value*layer[0][i].weight[j];
+				}
+
+				if(sum[j] < theta) {
+					layer[1][j].value = 0;
+				}
+				else {
+					layer[1][j].value = 1;
+				}
+
+				for(i=0; i<IMG_SIZE ; i++) {
+					layer[0][i].weight[j] += epsilon*(expected[letter][j]-sum[j])*layer[0][i].value;
+				}
+
+				if(expected[letter][j] != layer[1][j].value) {
+					errors[j] ++;
+				}
+				errorDiff[j] += fabsf(expected[letter][j]-sum[j]);
+			}
+		}
+
+		learnSteps ++;
+
+		float totalErrorDiff = 0;
+		int totalErrors = 0;
+		// printf("Iter %d\n", learnSteps);
+		for(j=0 ; j<26 ; j++) {
+			totalErrorDiff += errorDiff[j];
+			totalErrors += errors[j];
+			// printf("\t%d: %f - %d\n", j, errorDiff[j], errors[j]);
+		}
+		if(totalErrorDiff < minErrorDiff || minErrorDiff == -1) {
+			minErrorDiff = totalErrorDiff;
+			minOverride = 0;
+		}
+		// If the error is above the minimum found for 5 consecutive turns, stops the laerning
+		else if(minOverride < 5) {
+			minOverride ++;
+		}
+		else {
+			learning = 0;
+		}
+
+		fprintf(outputFile, "%d %f %d\n", learnSteps, totalErrorDiff, totalErrors);
+	}
+
+	printf("Learning finished in %d steps\n", learnSteps);
+
+	fclose(outputFile);
+
+	return layer;
+}
+
+Neuron** learnHidden(char** fileList, Neuron** layer, float theta, int nbHiddenNeurons) {
 	float epsilon = 0.05, minErrorDiff = -1;
 	float *errorDiff;
 	int minOverride = 0;
@@ -152,20 +307,27 @@ Neuron** learn(char** fileList, Neuron** layer, float theta) {
 
 void test(char** fileList, Neuron** layer, float theta) {
 	int fileCount = 0, c = 0, nbModifs = 0, testCount = 0;
-	const int nbTests = 100;
+	const int nbTests = 100, maxNbModifs = IMG_SIZE;
 	int i = 0, j = 0;
 	int modifIndex = -1, line = 0;
-	int *init, *modif, *expected, *errors;
+	int *init, *modif, *expected, *errors, *modifErrors;
 
 	init = malloc(IMG_SIZE*sizeof(int));
 	modif = malloc(IMG_SIZE*sizeof(int));
 	expected = malloc(26*sizeof(int));
 	errors = malloc(nbTests*sizeof(int));
+	modifErrors = malloc(maxNbModifs*sizeof(int));
+
+	for(nbModifs=0 ; nbModifs<maxNbModifs ; nbModifs++) {
+		modifErrors[nbModifs] = 0;
+	}
 
 	for(i=0 ; i<IMG_SIZE ; i++) {
 		init[i] = -1;
 		modif[i] = -1;
 	}
+
+	FILE* totalOutputFile = fopen("results/out_26_test_total.txt", "w");
 
 	for(fileCount=0 ; fileCount<26 ; fileCount++) {
 		FILE* inputFile = fopen(fileList[fileCount], "r");
@@ -200,8 +362,7 @@ void test(char** fileList, Neuron** layer, float theta) {
 			}
 			i++;
 		}
-		printf("In %s :\n", fileList[fileCount]);
-		for(nbModifs=0 ; nbModifs<IMG_SIZE ; nbModifs++) {
+		for(nbModifs=0 ; nbModifs<maxNbModifs ; nbModifs++) {
 			for(j=0 ; j<nbTests ; j++) {
 				errors[j] = 0;
 			}
@@ -245,6 +406,7 @@ void test(char** fileList, Neuron** layer, float theta) {
 				layer[1][maxJ].value = 1;
 				if(layer[1][maxJ].value != expected[maxJ]) {
 					errors[testCount] = 1;
+					modifErrors[nbModifs] ++;
 				}
 				else {
 					errors[testCount] = 0;
@@ -260,12 +422,19 @@ void test(char** fileList, Neuron** layer, float theta) {
 				totalErrors += errors[testCount];
 			}
 
-			// Prints the number of errors per number of modification, then the percentage of errors according to the number of tests
-			printf("\t%d (%.1f %%) modif.  \t->   %d (%.1f %%) errors\n", nbModifs, (float) nbModifs*(100/IMG_SIZE), totalErrors, (float) totalErrors*(100/nbTests));
+			// Prints the percentage of modification, then the percentage of errors according to the number of tests for each number of modification (letter by letter)
 			fprintf(outputFile, "%f %f\n", (float) nbModifs*(100/IMG_SIZE), (float) totalErrors*(100/nbTests));
 		}
 		fclose(outputFile);
 	}
+
+	// Mean values for the whole tests of the fprintf right above this
+	for(nbModifs=0 ; nbModifs<maxNbModifs ; nbModifs++) {
+		printf("%d (%.1f %%) modif.  \t->   %d (%.1f %%) errors\n", nbModifs, (float) nbModifs*(100/IMG_SIZE), modifErrors[nbModifs], (float) 100*modifErrors[nbModifs]/(26*nbTests));
+		fprintf(totalOutputFile, "%f %f\n", (float) nbModifs*(100/IMG_SIZE), (float) 100*modifErrors[nbModifs]/(26*nbTests));
+	}
+
+	fclose(totalOutputFile);
 }
 
 int isInArray(int val, int* array, int size) {
