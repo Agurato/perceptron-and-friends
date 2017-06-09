@@ -3,6 +3,8 @@
 #define IMG_SIZE 25
 
 Neuron** learnNoHidden(char** fileList, Neuron** layer, float theta);
+void testNoHidden(char** fileList, Neuron** layer, float theta);
 Neuron** learnHidden(char** fileList, Neuron** layer, float theta, int nbHiddenNeurons);
-void test(char** fileList, Neuron** layer, float theta);
+void testHidden(char** fileList, Neuron** layer, float theta, int nbHiddenNeurons);
 int isInArray(int val, int* array, int size);
+void displayNetwork(Neuron **layer, int nbHiddenNeurons);
