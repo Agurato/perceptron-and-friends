@@ -1,4 +1,5 @@
 all: 26 ac display_letters
+	mkdir -p results
 
 ac: perceptron_ac.c perceptron_ac.h perceptron.h
 	gcc -Wall -pedantic perceptron_ac.c -o perceptron_ac -lm
