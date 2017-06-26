@@ -513,6 +513,7 @@ void testHidden(char** fileList, Neuron** layer, float theta, int nbHiddenNeuron
 			i++;
 		}
 		fclose(inputFile);
+        
 		for(nbModifs=0 ; nbModifs<maxNbModifs ; nbModifs++) {
 			for(j=0 ; j<nbTests ; j++) {
 				errors[j] = 0;

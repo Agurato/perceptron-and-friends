@@ -66,6 +66,7 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 			puts("Error reading the file");
 			exit(1);
 		}
+        
 		i = 0;
 		while((c = fgetc(inputFile)) != EOF) {
 			if(c != 48 && c != 49) {
