@@ -1,25 +1,25 @@
+#ifndef __KOHONEN_DEF
+#define __KOHONEN_DEF
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
 #include <math.h>
 
-#define EPSILON 0.5
-#define DATA_SIZE 20
-#define NB_NEURONS 20
+#define EPSILON 0.01
 
-float heaviside(float value);
-
-/**** Data ****/
+/****** POI_Data ******/
+/* Points of Interest */
 
 typedef struct data_struct {
     double x;
     double y;
-} Data;
+} POI_Data;
 
-int init_dataset();
-Data get_next_data();
-Data get_data(size_t index);
+int init_dataset(int size);
+POI_Data get_next_data();
+POI_Data get_data(size_t index);
 
 /**** Neurons ****/
 
@@ -29,11 +29,11 @@ typedef struct neuron_struct {
     double activity;
 } Neuron;
 
-Neuron __neuron_set[NB_NEURONS];
-
-int init_neurons();
+int init_neurons(int size);
 Neuron get_neuron(size_t neuron_id);
-void compute_neuron_activity(Data data_selected);
+void compute_neuron_activity(POI_Data data_selected);
 size_t winning_neuron();
-double neighbourhood_function(size_t winner_index, size_t index_neuron, double eta);
-int update_neurons(Data data_selected, size_t winner_index, double eta);
+double neighbourhood_function(int winner_index, int index_neuron, double eta);
+int update_neurons(POI_Data data_selected, size_t winner_index, double eta);
+
+#endif

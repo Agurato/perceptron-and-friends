@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <math.h>
 #include <GL/glut.h>
-#include <time.h>
 #include "kohonen.h"
 
 /* structure de coordonnée 2D pour affichage*/

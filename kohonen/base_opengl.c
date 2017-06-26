@@ -1,14 +1,10 @@
-/*
-Simple programme d'affichage de points et de segments en opengl
-utilise GL et glut
-*/
-
 #include "base_opengl.h"
 
 int cpt = 0;
-char presse, calc;
+char pushed, calc;
 int anglex, angley, x, y, xold, yold;
 double eta = 1.9;
+int nb_poi, nb_neurons;
 
 
 /* affiche la chaine fmt a partir des coordonnées x, y*/
@@ -45,11 +41,19 @@ void draw_text(float x, float y, const char *fmt, ...)
 /* *************************************************** */
 int main(int argc, char **argv) {
 
+    if(argc != 3) {
+        printf("Expected 2 arguments : <nb of PoI> <nb of Neurons>\n");
+        exit(1);
+    }
+
+    nb_poi = atoi(argv[1]);
+    nb_neurons = atoi(argv[2]);
+
     // init kohonen
     srand(time(NULL));
 	srand48(time(NULL));
-    init_dataset();
-    init_neurons();
+    init_dataset(nb_poi);
+    init_neurons(nb_neurons);
 
     /* initilisation de glut et creation de la fenetre */
     glutInit(&argc, argv);
@@ -98,15 +102,15 @@ void affichage() {
     // dataset
     glColor3f(0.0, 1.0, 0.0);
     //glVertex2f(0.4, 0.1);
-    for (size_t i = 0; i < DATA_SIZE; i++) {
-        Data data = get_data(i);
+    for (size_t i = 0; i < nb_poi; i++) {
+        POI_Data data = get_data(i);
     //    printf("(%zd, %zd)\n", data.x, data.y);
         glVertex2f(data.x, data.y);
     }
     // neurons
     glColor3f(1.0, 0.0, 0.0);
     //glVertex2f(0.4, 0.1);
-    for (size_t i = 0; i < NB_NEURONS; i++) {
+    for (size_t i = 0; i < nb_neurons; i++) {
         Neuron neuron = get_neuron(i);
     //    printf("(%zd, %zd)\n", neuron.Wx, neuron.Wy);
         glVertex2f(neuron.Wx, neuron.Wy);
@@ -115,7 +119,7 @@ void affichage() {
 
 
     glBegin(GL_LINE_LOOP);
-    for (size_t i = 0; i < NB_NEURONS; i++) {
+    for (size_t i = 0; i < nb_neurons; i++) {
         Neuron neuron = get_neuron(i);
         //printf("(%zd, %zd)\n", neuron.Wx, neuron.Wy);
         glVertex2f(neuron.Wx, neuron.Wy);
@@ -133,7 +137,7 @@ void idle() {
     if(calc) {
         cpt++;
         // select image
-        Data data_selected = get_next_data();
+        POI_Data data_selected = get_next_data();
 
         // simulate
         compute_neuron_activity(data_selected);
@@ -145,7 +149,7 @@ void idle() {
         // update
         update_neurons(data_selected, winner_index, eta);
 
-        eta -= eta/10000000;
+        eta -= eta/1000000;
 
         // display
         if (cpt%1000 == 0) {
@@ -181,21 +185,21 @@ void reshape(int x, int y) {
 void mouse(int bouton, int etat, int x, int y) {
     /* si on appuie sur la bouton de gauche */
     if (bouton==GLUT_LEFT_BUTTON && etat ==GLUT_DOWN) {
-        presse=1; // vrai
+        pushed=1; // vrai
         xold=x;   // sauvegarde de la position de la souris
         yold=y;
     }
 
     /* si on relache la souris */
     if (bouton==GLUT_LEFT_BUTTON && etat ==GLUT_UP) {
-        presse=0; // faux
+        pushed=0; // faux
     }
 } /* mouse */
 
 
 /*gestion des mouvements de la souris */
 void mousemotion(int x, int y) {
-    if (presse) { /* si le bouton gauche est presse */
+    if (pushed) { /* si le bouton gauche est presse */
         /* on mofifie les angles de rotation de l'objet en fonction de la position actuelle de la souris et de la derniere position sauvegard?e */
         anglex=anglex+(x-xold);
         angley=angley+(y-yold);
