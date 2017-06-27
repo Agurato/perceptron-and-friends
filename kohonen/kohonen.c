@@ -5,13 +5,12 @@
 POI_Data *poi;
 int NB_POI;
 
-int init_dataset(int size) {
+int init_poi(int size) {
     NB_POI = size;
     poi = malloc(NB_POI*sizeof(POI_Data));
     for (size_t i = 0; i < NB_POI; i++) {
         poi[i].x = 2*drand48()-1;
         poi[i].y = 2*drand48()-1;
-        printf("%f ; %f\n", poi[i].x, poi[i].y);
     }
     return 0;
 }
@@ -34,8 +33,8 @@ int init_neurons(int size) {
     NB_NEURONS = size;
     neurons = malloc(NB_NEURONS*sizeof(Neuron));
     for (size_t i = 0; i < NB_NEURONS; i++) {
-        neurons[i].Wx = cos(2*M_PI*i/NB_POI)/10;
-        neurons[i].Wy = sin(2*M_PI*i/NB_POI)/10;
+        neurons[i].Wx = cos(2*M_PI*i/NB_NEURONS)/2;
+        neurons[i].Wy = sin(2*M_PI*i/NB_NEURONS)/2;
     }
     return 0;
 }
@@ -60,20 +59,35 @@ size_t winning_neuron() {
     return winner_index;
 }
 
-double neighbourhood_function(int winner_index, int index_neuron, double eta) {
+int calculate_distance(int winner_index, int index_neuron) {
     int d = abs(winner_index - index_neuron);
-
-    // If distance == 0, so there is no division by 0
-    if(d == 0) {
-        return eta/2;
+    if(NB_NEURONS - d < d) {
+        d = NB_NEURONS - d;
     }
-    return (eta/2)*((sin(1.8*d))/(1.8*d))*exp(-(1.8*d*d)/(eta*eta));
+
+    return d;
 }
 
-int update_neurons(POI_Data data_selected, size_t winner_index, double eta) {
+double neighbourhood_function(int d, double sigma) {
+    float a = 1;
+    // If distance == 0, so there is no division by 0
+    if(d == 0) {
+        return sigma/2;
+    }
+    if(sigma == 0.1) {
+        return 0;
+    }
+    // return (sigma/2)*((sin(a*d))/(a*d))*exp(-(a*d*d)/(sigma*sigma));
+    return exp(-(d*d)/(sigma*sigma))*(sin(a*d)/(a*d))*(sigma/2);
+}
+
+int update_neurons(POI_Data data_selected, size_t winner_index, double alpha, double sigma) {
+    int distance = 0;
+
     for (size_t i = 0; i < NB_NEURONS; i++) {
-        neurons[i].Wx += EPSILON * (data_selected.x - neurons[i].Wx) * neighbourhood_function(winner_index, i, eta);
-        neurons[i].Wy += EPSILON * (data_selected.y - neurons[i].Wy) * neighbourhood_function(winner_index, i, eta);
+        distance = calculate_distance(winner_index, i);
+        neurons[i].Wx += alpha * (data_selected.x - neurons[i].Wx) * neighbourhood_function(distance, sigma);
+        neurons[i].Wy += alpha * (data_selected.y - neurons[i].Wy) * neighbourhood_function(distance, sigma);
     }
     return 0;
 }

@@ -66,7 +66,7 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 			puts("Error reading the file");
 			exit(1);
 		}
-        
+
 		i = 0;
 		while((c = fgetc(inputFile)) != EOF) {
 			if(c != 48 && c != 49) {
@@ -109,9 +109,9 @@ Neuron** learn(char** fileList, Neuron** layer, float theta, int wh) {
 
 		}
 
-		learnSteps ++;
 		fprintf(outputFile, "%d %f %d\n", learnSteps, errorDiff, errors);
 		printf("Iter %d:   diff = %f   ->   errors = %d\n", learnSteps, errorDiff, errors);
+        learnSteps ++;
 
 		if(wh) {
 			if(errorDiff <= 0.000001) {

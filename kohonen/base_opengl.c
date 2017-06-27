@@ -3,8 +3,8 @@
 int cpt = 0;
 char pushed, calc;
 int anglex, angley, x, y, xold, yold;
-double eta = 1.9;
-int nb_poi, nb_neurons;
+double alpha = 1, sigma = 1.0;
+int NB_POI, NB_NEURONS;
 
 
 /* affiche la chaine fmt a partir des coordonnées x, y*/
@@ -46,14 +46,13 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    nb_poi = atoi(argv[1]);
-    nb_neurons = atoi(argv[2]);
-
-    // init kohonen
+    NB_POI = atoi(argv[1]);
+    NB_NEURONS = atoi(argv[2]);
     srand(time(NULL));
-	srand48(time(NULL));
-    init_dataset(nb_poi);
-    init_neurons(nb_neurons);
+    srand48(time(NULL));
+    printf("TSP started with %d points of interest and %d neurons\n", NB_POI, NB_NEURONS);
+    init_poi(NB_POI);
+    init_neurons(NB_NEURONS);
 
     /* initilisation de glut et creation de la fenetre */
     glutInit(&argc, argv);
@@ -86,7 +85,6 @@ int main(int argc, char **argv) {
 
 /* fonction d'affichage appelée a chaque refresh*/
 void affichage() {
-    //printf("affichage\n");
     /* effacement de l'image avec la couleur de fond */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -101,27 +99,22 @@ void affichage() {
     glBegin(GL_POINTS);
     // dataset
     glColor3f(0.0, 1.0, 0.0);
-    //glVertex2f(0.4, 0.1);
-    for (size_t i = 0; i < nb_poi; i++) {
+    for (size_t i = 0; i < NB_POI; i++) {
         POI_Data data = get_data(i);
-    //    printf("(%zd, %zd)\n", data.x, data.y);
         glVertex2f(data.x, data.y);
     }
     // neurons
     glColor3f(1.0, 0.0, 0.0);
-    //glVertex2f(0.4, 0.1);
-    for (size_t i = 0; i < nb_neurons; i++) {
+    for (size_t i = 0; i < NB_NEURONS; i++) {
         Neuron neuron = get_neuron(i);
-    //    printf("(%zd, %zd)\n", neuron.Wx, neuron.Wy);
         glVertex2f(neuron.Wx, neuron.Wy);
     }
     glEnd();
 
 
     glBegin(GL_LINE_LOOP);
-    for (size_t i = 0; i < nb_neurons; i++) {
+    for (size_t i = 0; i < NB_NEURONS; i++) {
         Neuron neuron = get_neuron(i);
-        //printf("(%zd, %zd)\n", neuron.Wx, neuron.Wy);
         glVertex2f(neuron.Wx, neuron.Wy);
     }
     glEnd();
@@ -146,14 +139,23 @@ void idle() {
         // compare
         size_t winner_index = winning_neuron();
 
-        // update
-        update_neurons(data_selected, winner_index, eta);
+        double x = cpt/1000000.0;
+        alpha = exp(-(x*x)/4);
 
-        eta -= eta/1000000;
+        sigma = 1.9 - (cpt/1500000.0);
+        if(sigma <= 0) {
+            sigma = 0.000001;
+        }
+
+        // update
+        update_neurons(data_selected, winner_index, alpha, sigma);
 
         // display
         if (cpt%1000 == 0) {
             glutPostRedisplay();
+        }
+        if(cpt%100000 == 0) {
+            printf("%f\t%f\n", sigma, alpha);
         }
     }
 }
